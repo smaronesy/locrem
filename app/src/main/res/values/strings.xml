@@ -47,4 +47,9 @@
     <string name="permission_foreground_denied_explanation">denided</string>
     <string name="permission_background_denied_explanation">background denied</string>
     <string name="nothing_is_denied">nothing is denied</string>
+    <string name="require_backgound_permission">This app requires background location permission, please go to settings and choose the \"allow all the times\" option</string>
+    <string name="require_permission">"Please go to the location permissions settings and choose \"allow all the times\" "</string>
+    <string name="maps_api_key">AIzaSyD59yjKE3aTQmoE9QMJQ06RKOC6HUipGRs</string>
+    <string name="confirm_location">Confirm Location</string>
+    <string name="to_login">directs you to the login page</string>
 </resources>

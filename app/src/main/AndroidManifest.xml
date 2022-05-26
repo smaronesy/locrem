@@ -8,7 +8,10 @@
          location permissions for the 'MyLocation' functionality.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="replace" />
+        <!-- Always include this permission -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!--         The BACKGROUND_LOCATION permission is required for geofencing functionality to work on Q+ -->
+
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" tools:node="replace"/>
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -25,6 +28,11 @@
         android:theme="@style/AppTheme">
         <activity android:name=".locationreminders.ReminderDescriptionActivity"></activity>
         <!--
+            From Firebase
+            Certificate fingerprints:
+	        SHA1: 0A:EC:45:2C:93:78:FD:63:C3:41:A2:DC:09:7D:7F:39:3F:9A:80:6F
+	        SHA256: 16:9C:4A:1C:78:72:23:EA:88:49:70:71:58:4D:72:B7:64:60:21:D2:43:CA:0D:35:E9:E1:9F:4E:18:CF:A8:DF
+
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
              Note that the API key is linked to the encryption key used to sign the APK.
@@ -36,9 +44,11 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".authentication.AuthenticationActivity">
+
+        <activity android:name=".locationreminders.RemindersActivity">
         </activity>
-        <activity android:name=".locationreminders.RemindersActivity" >
+
+        <activity android:name=".authentication.AuthenticationActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
