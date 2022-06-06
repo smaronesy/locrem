@@ -100,10 +100,10 @@ class RemindersLocalRepositoryTest {
         // GIVEN - A new Reminder saved in the database.
         localDataSource.saveReminder(reminder1)
 
-        // WHEN  - Reminder retrieved by ID.
+        // WHEN  - Reminder retrieved by ID that does not exist.
         val result = localDataSource.getReminderById("34234")
 
-        // THEN - Same Reminder is returned.
+        // THEN - Error is returned indicating reminder/data not found.
         result as Result.Error
         assertThat(result.message, `is`("Reminder not found!"))
     }
