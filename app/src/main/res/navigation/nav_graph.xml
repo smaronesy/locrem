@@ -8,6 +8,10 @@
         android:id="@+id/reminderListFragment"
         android:name="com.udacity.project4.locationreminders.reminderslist.ReminderListFragment"
         android:label="ReminderListFragment">
+        <argument
+            android:name="myArg"
+            app:argType="integer"
+            android:defaultValue="0" />
         <action
             android:id="@+id/to_save_reminder"
             app:destination="@id/saveReminderFragment" />
