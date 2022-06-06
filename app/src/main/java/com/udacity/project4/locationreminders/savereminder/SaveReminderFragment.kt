@@ -35,9 +35,9 @@ class SaveReminderFragment : BaseFragment() {
     private lateinit var geofencingClient: GeofencingClient
 
     private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(context, GeofenceBroadcastReceiver::class.java)
+        val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
         intent.action = ACTION_GEOFENCE_EVENT
-        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     override fun onCreateView(
@@ -75,46 +75,48 @@ class SaveReminderFragment : BaseFragment() {
             val latitude = _viewModel.latitude.value
             val longitude = _viewModel.longitude.value
 
-            val reminder = ReminderDataItem(title, description, location, latitude, longitude)
+            if(title != "" || latitude != null) {
 
-//            TODO: use the user entered reminder details to:
-//             1) add a geofencing request
-            val geofence = Geofence.Builder()
-                .setRequestId(reminder.id)
-                .setCircularRegion(
-                    latitude!!,
-                    longitude!!,
-                    GeofencingConstants.GEOFENCE_RADIUS_IN_METERS)
-                .setExpirationDuration(GeofencingConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-                .build()
+                val reminder = ReminderDataItem(title, description, location, latitude, longitude)
 
-            val geofencingRequest = GeofencingRequest.Builder()
-                .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-                .addGeofence(geofence)
-                .build()
+                // use the user entered reminder details to:
+                // 1) add a geofencing request
+                val geofence = Geofence.Builder()
+                    .setRequestId(reminder.id)
+                    .setCircularRegion(
+                        latitude!!,
+                        longitude!!,
+                        GeofencingConstants.GEOFENCE_RADIUS_IN_METERS)
+                    .setExpirationDuration(GeofencingConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+                    .build()
 
+                val geofencingRequest = GeofencingRequest.Builder()
+                    .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+                    .addGeofence(geofence)
+                    .build()
 
-            geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
-                addOnSuccessListener {
-                    Toast.makeText(requireActivity(), R.string.geofences_added,
-                        Toast.LENGTH_SHORT)
-                        .show()
-                    Log.e("Add Geofence", geofence.requestId)
-                }
-                addOnFailureListener {
-                    Toast.makeText(requireActivity(), R.string.geofences_not_added,
-                        Toast.LENGTH_SHORT).show()
-                    if ((it.message != null)) {
-                        Log.w(TAG, it.message.toString())
+                geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
+                    addOnSuccessListener {
+                        Toast.makeText(requireActivity(), R.string.geofences_added,
+                            Toast.LENGTH_SHORT)
+                            .show()
+                        Log.e("Add Geofence", geofence.requestId)
+                    }
+                    addOnFailureListener {
+                        Toast.makeText(requireActivity(), R.string.geofences_not_added,
+                            Toast.LENGTH_SHORT).show()
+                        if ((it.message != null)) {
+                            Log.w(TAG, it.message.toString())
+                        }
                     }
                 }
-            }
 
-            //    TODO   2) save the reminder to the local db
-            _viewModel.validateAndSaveReminder(reminder)
-            _viewModel.navigationCommand.value =
-                NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToReminderListFragment())
+                //    TODO   2) save the reminder to the local db
+                _viewModel.validateAndSaveReminder(reminder)
+            } else {
+                Toast.makeText(requireContext(), "Please complete the fields", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

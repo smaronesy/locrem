@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.Observer
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
@@ -32,10 +31,8 @@ class AuthenticationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_authentication)
 
-//         TODO: Implement the create account and sign in using FirebaseUI, use sign in using email and sign in using Google
         auth_button.setOnClickListener { launchSignInFlow() }
 
-//          TODO: If the user was authenticated, send him to RemindersActivity
         observeAuthenticationState()
 
 //          TODO: a bonus is to customize the sign in flow to look nice using :

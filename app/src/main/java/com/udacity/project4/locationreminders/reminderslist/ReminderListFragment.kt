@@ -30,7 +30,6 @@ class ReminderListFragment : BaseFragment() {
                 inflater,
                 R.layout.fragment_reminders, container, false
             )
-//        _viewModel = RemindersListViewModel(requireContext().applicationContext as Application, (requireContext().applicationContext as MyApp).remindersLocalRepository)
         binding.viewModel = _viewModel
 
         setHasOptionsMenu(true)
@@ -67,14 +66,7 @@ class ReminderListFragment : BaseFragment() {
     }
 
     private fun setupRecyclerView() {
-
         val adapter = RemindersListAdapter {
-//            var reminderDescriptionActivity = Intent(this.requireContext(), ReminderDescriptionActivity::class.java)
-//            reminderDescriptionActivity.putExtra("id", it.id)
-//            reminderDescriptionActivity.putExtra("title", it.title)
-//            reminderDescriptionActivity.putExtra("description", it.description)
-//            reminderDescriptionActivity.putExtra("lat", it.latitude)
-//            reminderDescriptionActivity.putExtra("long", it.longitude)
             var reminderDescriptionActivity = ReminderDescriptionActivity.newIntent(context!!, it)
             startActivity(reminderDescriptionActivity)
         }
@@ -86,7 +78,7 @@ class ReminderListFragment : BaseFragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.logout -> {
-//                TODO: add the logout implementation
+                // add the logout implementation
                 AuthUI.getInstance().signOut(requireActivity().applicationContext).addOnCompleteListener {
                     if(it.isSuccessful){
                         var authInt = Intent(this.requireContext(), AuthenticationActivity::class.java)
@@ -102,7 +94,7 @@ class ReminderListFragment : BaseFragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-//        display logout as menu item
+        // display logout as menu item
         inflater.inflate(R.menu.main_menu, menu)
     }
 }

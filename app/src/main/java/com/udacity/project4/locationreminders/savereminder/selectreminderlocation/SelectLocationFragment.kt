@@ -34,7 +34,6 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
-import kotlinx.android.synthetic.main.fragment_save_reminder.*
 import kotlinx.android.synthetic.main.fragment_select_location.*
 import org.koin.android.ext.android.inject
 import java.util.*
@@ -68,7 +67,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
 
-//        TODO: add the map setup implementation
+        // add the map setup implementation
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
@@ -78,43 +77,29 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         return binding.root
     }
 
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//        checkPermissionsAndStartGeofencing()
-//    }
-
     override fun onStart() {
         super.onStart()
-        checkPermissionsAndStartGeofencing()
+        checkPermissions()
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
 
-        //  TODO: zoom to the user location after taking his permission
+        // zoom to the user location after taking his permission
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI()
 
-//        _viewModel.locationPermission.observe(this.requireActivity(), androidx.lifecycle.Observer {
-//            if(it){
-////                updateLocationUI()
-//                // Get the current location of the device and set the position of the map.
-//                getDeviceLocation()
-//            }
-//        })
-//
-//        // Get the current location of the device and set the position of the map.
         getDeviceLocation()
 
-        //  TODO: put a marker to location that the user selected
+        //  put a marker to location that the user selected
         // Add marker on the selected location
         setMapLongClick(map)
         setPoiClick(map)
 
-        //  TODO: add style to the map
+        //  add style to the map
         setMapStyle(map)
 
-        //  TODO: call this function after the user confirms on the selected location
+        //  call this function after the user confirms on the selected location
         onLocationSelected()
 
     }
@@ -125,24 +110,12 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             return
         }
         try {
-//            _viewModel.locationPermission.observe(this.requireActivity(), androidx.lifecycle.Observer {
-//                if(it){
-//                    map?.isMyLocationEnabled = true
-//                    map?.uiSettings?.isMyLocationButtonEnabled = true
-//                } else {
-//                    map?.isMyLocationEnabled = false
-//                    map?.uiSettings?.isMyLocationButtonEnabled = false
-//    //                lastKnownLocation = null
-//                    requestForegroundLocationPermissions()
-//                }
-//            })
             if (_viewModel.locationPermission.value == true) {
                 map?.isMyLocationEnabled = true
                 map?.uiSettings?.isMyLocationButtonEnabled = true
             } else {
                 map?.isMyLocationEnabled = false
                 map?.uiSettings?.isMyLocationButtonEnabled = false
-//                lastKnownLocation = null
                 requestForegroundLocationPermissions()
             }
         } catch (e: SecurityException) {
@@ -157,28 +130,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
          * cases when a location is not available.
          */
         try {
-//            _viewModel.locationPermission.observe(this.requireActivity(), androidx.lifecycle.Observer {
-//                if (it) {
-//                    val locationResult = fusedLocationProviderClient.lastLocation
-//                    locationResult.addOnCompleteListener(this.requireActivity()) { task ->
-//                        if (task.isSuccessful) {
-//                            // Set the map's camera position to the current location of the device.
-//                            lastKnownLocation = task.result
-//                            if (lastKnownLocation != null) {
-//                                map?.moveCamera(CameraUpdateFactory.newLatLngZoom(
-//                                    LatLng(lastKnownLocation!!.latitude,
-//                                        lastKnownLocation!!.longitude), 15f))
-//                            }
-//                        } else {
-//                            Log.d(TAG, "Current location is null. Using defaults.")
-//                            Log.e(TAG, "Exception: %s", task.exception)
-//                            map?.moveCamera(CameraUpdateFactory
-//                                .newLatLngZoom(LatLng(32.7, 117.2), 12f))
-//                            map?.uiSettings?.isMyLocationButtonEnabled = false
-//                        }
-//                    }
-//                }
-//            })
             if (_viewModel.locationPermission.value == true) {
                 val locationResult = fusedLocationProviderClient.lastLocation
                 locationResult.addOnCompleteListener(this.requireActivity()) { task ->
@@ -208,7 +159,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
      * Starts the permission check and Geofence process only if the Geofence associated with the
      * current hint isn't yet active.
      */
-    private fun checkPermissionsAndStartGeofencing() {
+    private fun checkPermissions() {
         if (!foregroundLocationPermissionApproved() || !backgroundLocationPermissionApproved()) {
             requestForegroundLocationPermissions()
             Snackbar.make(
@@ -234,7 +185,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         grantResults: IntArray
     ) {
         Log.d(ContentValues.TAG, "onRequestPermissionResult")
-
         if (
             grantResults.isEmpty() ||
             grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_DENIED ||
@@ -291,7 +241,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_TURN_DEVICE_LOCATION_ON) {
             // We don't rely on the result code, but just check the location setting again
-            checkDeviceLocationSettingsAndStartGeofence(false)
+            checkDeviceLocationSettings(false)
         }
     }
 
@@ -322,7 +272,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
  *  Uses the Location Client to check the current state of location settings, and gives the user
  *  the opportunity to turn on location services within our app.
  */
-    private fun checkDeviceLocationSettingsAndStartGeofence(resolve:Boolean = true) {
+    private fun checkDeviceLocationSettings (resolve:Boolean = true) {
         val locationRequest = LocationRequest.create().apply {
             priority = LocationRequest.PRIORITY_LOW_POWER
         }
@@ -350,19 +300,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                     R.string.location_required_error,
                     Snackbar.LENGTH_INDEFINITE
                 ).setAction(android.R.string.ok) {
-                    checkDeviceLocationSettingsAndStartGeofence()
+                    checkDeviceLocationSettings()
                 }.show()
-            }
-        }
-        locationSettingsResponseTask.addOnCompleteListener {
-            if ( it.isSuccessful ) {
-//                addGeofenceForClue()
             }
         }
     }
 
     private fun onLocationSelected() {
-        //        TODO: When the user confirms on the selected location,
+        //        When the user confirms on the selected location,
         //         send back the selected location details to the view model
         //         and navigate back to the previous fragment to save the reminder and add the geofence
         confirm_button.setOnClickListener { latLng ->
@@ -459,13 +404,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             Log.e(TAG, "Can't find style. Error: ", e)
         }
     }
-
-
 }
 
-private const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33
 private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
 private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
 private const val TAG = "RemindersMainActivity"
 private const val LOCATION_PERMISSION_INDEX = 0
-private const val BACKGROUND_LOCATION_PERMISSION_INDEX = 1
+
