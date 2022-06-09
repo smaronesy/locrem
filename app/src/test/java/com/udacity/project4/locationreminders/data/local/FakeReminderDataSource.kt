@@ -13,7 +13,11 @@ class FakeReminderDataSource(var reminders: MutableList<ReminderDTO>? = mutableL
         if(shouldReturnError){
             return Result.Error("Test Exception")
         }
-        reminders?.let { return Result.Success(ArrayList(reminders)) }
+
+        reminders?.let {
+            return Result.Success(ArrayList(reminders))
+        }
+
         return Result.Error(
             "No Reminders"
         )
@@ -24,7 +28,21 @@ class FakeReminderDataSource(var reminders: MutableList<ReminderDTO>? = mutableL
     }
 
     override suspend fun getReminderById(id: String): Result<ReminderDTO> {
-        TODO("Not yet implemented")
+        if(shouldReturnError){
+            return Result.Error("Test Exception")
+        }
+
+        reminders?.let {
+            for(reminder in it){
+                if(reminder.id == id){
+                    return Result.Success(reminder)
+                }
+            }
+        }
+
+        return Result.Error(
+            "No Reminders"
+        )
     }
 
     override suspend fun deleteAllReminders() {
