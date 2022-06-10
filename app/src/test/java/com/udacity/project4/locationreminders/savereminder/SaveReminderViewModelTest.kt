@@ -121,7 +121,7 @@ class SaveReminderViewModelTest {
         assertTrue(fakeReminderDataSource.reminders!!.contains(reminder4DTO))
 
         val toastText: SingleLiveEvent<String> = saveRemindersViewModel.showToast
-        assertEquals("Reminder Saved !", toastText.value)
+        assertEquals("Reminder Saved!", toastText.value)
     }
 
     @Test

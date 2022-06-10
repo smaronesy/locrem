@@ -37,7 +37,8 @@
         android:label="Select Location" >
         <action
             android:id="@+id/action_selectLocationFragment_to_saveReminderFragment"
-            app:destination="@id/saveReminderFragment" />
+            app:destination="@id/saveReminderFragment"
+            app:popUpToInclusive="false" />
     </fragment>
 
 </navigation>

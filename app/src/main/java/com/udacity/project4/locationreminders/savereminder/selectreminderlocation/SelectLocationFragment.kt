@@ -9,12 +9,15 @@ import android.content.res.Resources
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
-import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -41,9 +44,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private lateinit var lastKnownLocation: Location
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var map: GoogleMap
-    private lateinit var coordinates: LatLng
     private lateinit var locationCallback: LocationCallback
 
+    private var coordinates: LatLng? = null
     private val runningQOrLater = android.os.Build.VERSION.SDK_INT >=
             android.os.Build.VERSION_CODES.Q
 
@@ -65,6 +68,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_GRANTED) {
                 Log.d(ContentValues.TAG, "PERMISSION WERE GRANTED callback")
                 if(map != null){
+                    getDeviceLocation()
                     map.isMyLocationEnabled = true
                     map.uiSettings.isMyLocationButtonEnabled  = true
                 }
@@ -137,28 +141,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         super.onStart()
         checkPermissions()
         checkDeviceLocationSettings()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (_viewModel.fgLocationPermission.value == true) startLocationUpdates()
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun startLocationUpdates() {
-        var locationRequest = LocationRequest.create()?.apply {
-            interval = 10000
-            fastestInterval = 5000
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
-        if (foregroundLocationPermissionApproved(this.requireContext())) {
-            requestForegroundLocationPermissions(this)
-            return
-        }
-        fusedLocationProviderClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper())
     }
 
     /**
@@ -267,7 +249,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                                 LatLng(lastKnownLocation!!.latitude,
                                     lastKnownLocation!!.longitude), 15f))
                         } else {
-                            startLocationUpdates()
+                            getDeviceLocation()
                         }
                     } else {
                         Log.d(TAG, "Current location is null. Using defaults.")
@@ -342,18 +324,22 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         //        When the user confirms on the selected location,
         //         send back the selected location details to the view model
         //         and navigate back to the previous fragment to save the reminder and add the geofence
-        confirm_button.setOnClickListener { latLng ->
-            // A Snippet is Additional text that's displayed below the title.
-            _viewModel.latitude.value = coordinates.latitude
-            _viewModel.longitude.value = coordinates.longitude
-            if(pioName != null){
-                _viewModel.reminderSelectedLocationStr.value = pioName
-            } else {
-                _viewModel.reminderSelectedLocationStr.value = "Random Location"
-            }
+        confirm_button.setOnClickListener {
+            if(coordinates != null) {
+                // A Snippet is Additional text that's displayed below the title.
+                _viewModel.latitude.value = coordinates!!.latitude
+                _viewModel.longitude.value = coordinates!!.longitude
+                if(pioName != null){
+                    _viewModel.reminderSelectedLocationStr.value = pioName
+                } else {
+                    _viewModel.reminderSelectedLocationStr.value = "Random Location"
+                }
 
-            _viewModel.navigationCommand.value =
-                NavigationCommand.To(SelectLocationFragmentDirections.actionSelectLocationFragmentToSaveReminderFragment())
+                _viewModel.navigationCommand.value =
+                    NavigationCommand.To(SelectLocationFragmentDirections.actionSelectLocationFragmentToSaveReminderFragment())
+            } else {
+                Toast.makeText(this.requireContext(), "Please select a location", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
