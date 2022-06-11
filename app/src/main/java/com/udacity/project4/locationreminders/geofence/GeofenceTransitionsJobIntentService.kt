@@ -50,7 +50,7 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
                 Log.v(TAG, this.getString(R.string.geofence_entered))
                 when {
                     geofencingEvent.triggeringGeofences.isNotEmpty() ->
-                        sendNotification(geofencingEvent.triggeringGeofences)
+                        geofenceIterator(geofencingEvent.triggeringGeofences)
                     else -> {
                         Log.e(TAG, "No Geofence Trigger Found! Abort mission!")
                         return
@@ -60,8 +60,15 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
         }
     }
 
-    private fun sendNotification(triggeringGeofences: List<Geofence>) {
-        val requestId = triggeringGeofences[0].requestId
+    // Loop through the geofence so all notification are sent
+    private fun geofenceIterator(triggeringGeofences: List<Geofence>) {
+        for(geo in triggeringGeofences){
+            sendNotification(geo)
+        }
+    }
+
+    private fun sendNotification(triggeringGeofence: Geofence) {
+        val requestId = triggeringGeofence.requestId
 
         //Get the local repository instance
         val remindersLocalRepository: ReminderDataSource by inject()

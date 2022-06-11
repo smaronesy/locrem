@@ -35,8 +35,13 @@ class SaveReminderFragment : BaseFragment() {
     private lateinit var binding: FragmentSaveReminderBinding
     private lateinit var geofencingClient: GeofencingClient
 
+    //Check if API level is 29 and above
     private val runningQOrLater = android.os.Build.VERSION.SDK_INT >=
             android.os.Build.VERSION_CODES.Q
+
+    //Check if API level is 30 and above
+    private val running30OrLater = android.os.Build.VERSION.SDK_INT >=
+            android.os.Build.VERSION_CODES.R
 
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(requireContext(), GeofenceBroadcastReceiver::class.java)
@@ -85,14 +90,37 @@ class SaveReminderFragment : BaseFragment() {
         geofencingClient = LocationServices.getGeofencingClient(this.requireActivity())
 
         binding.saveReminder.setOnClickListener {
-            if(!foregroundLocationPermissionApproved(requireContext())){
-                requestForegroundLocationPermissions(this)
-            } else if (!backgroundLocationPermissionApproved(requireContext(), runningQOrLater)) {
-                requestBackgroundLocationPermissions(this)
-            } else {
-                checkDeviceLocationSettingsAndStartGeofence()
-            }
 
+            if(runningQOrLater) {
+                if(running30OrLater) {
+                    if(!foregroundLocationPermissionApproved(requireContext())){
+                        requestForegroundLocationPermissions(this)
+                    }
+                    if (!backgroundLocationPermissionApproved(requireContext(), runningQOrLater)) {
+                        requestBackgroundLocationPermissions(this)
+                    }
+
+                    if(backgroundLocationPermissionApproved(this.requireContext(), runningQOrLater)) {
+                        checkDeviceLocationSettingsAndStartGeofence()
+                    }
+
+                } else {
+
+                    if(!foregroundLocationPermissionApproved(requireContext())){
+                        requestForegroundAndBackgroundLocationPermissions(this, runningQOrLater)
+                    }
+
+                    checkDeviceLocationSettingsAndStartGeofence()
+                }
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_DEVICE_LOCATION_SETTINGS) {
+            // We don't rely on the result code, but just check the location setting again
+            checkDeviceLocationSettingsAndStartGeofence(false)
         }
     }
 
@@ -129,7 +157,7 @@ class SaveReminderFragment : BaseFragment() {
                     latitude!!,
                     longitude!!,
                     GeofencingConstants.GEOFENCE_RADIUS_IN_METERS)
-                .setExpirationDuration(GeofencingConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+                .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
                 .build()
 
@@ -182,5 +210,7 @@ class SaveReminderFragment : BaseFragment() {
             "Reminders.addReminder.action.ACTION_GEOFENCE_EVENT"
     }
 }
+//private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
+private const val REQUEST_CODE_DEVICE_LOCATION_SETTINGS = 27
 
 

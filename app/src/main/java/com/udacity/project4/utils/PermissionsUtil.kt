@@ -46,6 +46,27 @@ fun backgroundLocationPermissionApproved(context: Context, runningQOrLater: Bool
 }
 
 @TargetApi(29 )
+fun requestForegroundAndBackgroundLocationPermissions(fragment: Fragment, runningQOrLater: Boolean) {
+    if (foregroundLocationPermissionApproved(fragment.requireContext())
+        && backgroundLocationPermissionApproved(fragment.requireContext(), runningQOrLater))
+        return
+    var permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+    val resultCode = when {
+        runningQOrLater -> {
+            permissionsArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE
+        }
+        else -> REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
+    }
+    Log.d("LOCATION PERMISSIONS", "Request foreground only location permission")
+    fragment.requestPermissions(
+        permissionsArray,
+        resultCode
+    )
+}
+
+
+@TargetApi(29 )
 fun requestForegroundLocationPermissions(fragment: Fragment) {
     if (foregroundLocationPermissionApproved(fragment.context!!))
         true
@@ -94,8 +115,7 @@ fun requestDeviceLocationPermissions(fragment: Fragment, exception: Exception, r
             try {
                 // Show the dialog by calling startResolutionForResult(),
                 // and check the result in onActivityResult().
-                exception.startResolutionForResult(fragment.requireActivity(),
-                    REQUEST_TURN_DEVICE_LOCATION_ON)
+                fragment.startIntentSenderForResult(exception.resolution.intentSender, REQUEST_CODE_DEVICE_LOCATION_SETTINGS, null, 0, 0, 0, null)
             } catch (sendEx: IntentSender.SendIntentException) {
                 Log.d(ContentValues.TAG, "Error geting location settings resolution: " + sendEx.message)
             }
@@ -109,6 +129,6 @@ fun requestDeviceLocationPermissions(fragment: Fragment, exception: Exception, r
         }
 }
 
-
+private const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33
 private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
-private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
+private const val REQUEST_CODE_DEVICE_LOCATION_SETTINGS = 27

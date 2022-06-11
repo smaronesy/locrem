@@ -47,8 +47,13 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private lateinit var locationCallback: LocationCallback
 
     private var coordinates: LatLng? = null
+
     private val runningQOrLater = android.os.Build.VERSION.SDK_INT >=
             android.os.Build.VERSION_CODES.Q
+
+    //Check if API level is 30 and above
+    private val running30OrLater = android.os.Build.VERSION.SDK_INT >=
+            android.os.Build.VERSION_CODES.R
 
     var marker: Marker? = null
     var pioName: String? = null
@@ -59,14 +64,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         permissions: Array<String>,
         grantResults: IntArray
     ) {
-        Log.d(ContentValues.TAG, "onRequestPermissionResult")
-        Log.d(ContentValues.TAG, requestCode.toString())
-        Log.d(ContentValues.TAG, grantResults.size.toString())
-//        Log.d(ContentValues.TAG, grantResults[LOCATION_PERMISSION_INDEX].toString())
-        if (requestCode == REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE) {
+        if (requestCode == REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
+            || requestCode == REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE) {
             if (grantResults.size > 0 &&
                 grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(ContentValues.TAG, "PERMISSION WERE GRANTED callback")
                 if(map != null){
                     getDeviceLocation()
                     map.isMyLocationEnabled = true
@@ -99,7 +100,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_TURN_DEVICE_LOCATION_ON) {
+        if (requestCode == REQUEST_CODE_DEVICE_LOCATION_SETTINGS) {
             // We don't rely on the result code, but just check the location setting again
             checkDeviceLocationSettings(false)
         }
@@ -149,19 +150,25 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
      */
     private fun checkPermissions() {
         if (!foregroundLocationPermissionApproved(this.requireContext()) || !backgroundLocationPermissionApproved(this.requireContext(), runningQOrLater)) {
-            requestForegroundLocationPermissions(this)
-            Snackbar.make(
-                binding.root,
-                R.string.require_permission,
-                Snackbar.LENGTH_INDEFINITE
-            )
-                .setAction(R.string.settings) {
-                    startActivity(Intent().apply {
-                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                        data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    })
-                }.show()
+            if(running30OrLater) {
+                requestForegroundLocationPermissions(this)
+                requestBackgroundLocationPermissions(this)
+//                Snackbar.make(
+//                    binding.root,
+//                    R.string.require_permission,
+//                    Snackbar.LENGTH_INDEFINITE
+//                )
+//                    .setAction(R.string.settings) {
+//                        startActivity(Intent().apply {
+//                            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+//                            data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+//                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//                        })
+//                    }.show()
+            } else {
+                requestForegroundAndBackgroundLocationPermissions(this, runningQOrLater)
+            }
+
         }
 
         if (foregroundLocationPermissionApproved(this.requireContext())) {
@@ -370,7 +377,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 }
 
 private const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
-private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
+private const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33
+//private const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
+private const val REQUEST_CODE_DEVICE_LOCATION_SETTINGS = 27
 private const val TAG = "RemindersMainActivity"
 private const val LOCATION_PERMISSION_INDEX = 0
 
