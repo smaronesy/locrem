@@ -52,4 +52,5 @@
     <string name="maps_api_key">AIzaSyD59yjKE3aTQmoE9QMJQ06RKOC6HUipGRs</string>
     <string name="confirm_location">Confirm Location</string>
     <string name="to_login">directs you to the login page</string>
+    <string name="gep_permission_denied_explanation">Please grant background permissions to save geofence</string>
 </resources>

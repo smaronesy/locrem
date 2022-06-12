@@ -68,6 +68,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             || requestCode == REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE) {
             if (grantResults.size > 0 &&
                 grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_GRANTED) {
+                _viewModel.fgLocationPermission.value = true
                 if(map != null){
                     getDeviceLocation()
                     map.isMyLocationEnabled = true
@@ -91,8 +92,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     })
                 }.show()
-        } else if (!backgroundLocationPermissionApproved(this.requireContext(), runningQOrLater) || shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
-            requestBackgroundLocationPermissions(this)
         }
 
         _viewModel.fgLocationPermission.value = foregroundLocationPermissionApproved(this.requireContext())
@@ -149,26 +148,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
      * current hint isn't yet active.
      */
     private fun checkPermissions() {
-        if (!foregroundLocationPermissionApproved(this.requireContext()) || !backgroundLocationPermissionApproved(this.requireContext(), runningQOrLater)) {
-            if(running30OrLater) {
-                requestForegroundLocationPermissions(this)
-                requestBackgroundLocationPermissions(this)
-//                Snackbar.make(
-//                    binding.root,
-//                    R.string.require_permission,
-//                    Snackbar.LENGTH_INDEFINITE
-//                )
-//                    .setAction(R.string.settings) {
-//                        startActivity(Intent().apply {
-//                            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-//                            data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-//                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//                        })
-//                    }.show()
-            } else {
-                requestForegroundAndBackgroundLocationPermissions(this, runningQOrLater)
-            }
-
+        if (!foregroundLocationPermissionApproved(this.requireContext())) {
+            requestForegroundLocationPermissions(this)
         }
 
         if (foregroundLocationPermissionApproved(this.requireContext())) {
